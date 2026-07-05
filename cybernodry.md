@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cyber Parkour Online - Versão Final</title>
+    <title>Cyber Parkour Online - Mobile Fixed</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -11,7 +11,7 @@
     <style>
         :root {
             --accent: #00ffcc;
-            --bg-chat: rgba(20, 20, 31, 0.85);
+            --bg-chat: rgba(20, 20, 31, 0.75);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; user-select: none; }
@@ -36,18 +36,18 @@
             display: block;
         }
 
-        /* BOTOES DO CELULAR VISÍVEIS E COM CORES FORTES */
+        /* PAINEL DE CONTROLES DO CELULAR MELHORADO */
         .controls-mobile {
             position: absolute;
-            bottom: 40px;
+            bottom: 30px;
             left: 0;
             right: 0;
-            padding: 0 35px;
+            padding: 0 30px;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
             pointer-events: none;
-            z-index: 99;
+            z-index: 20;
         }
 
         /* LADO ESQUERDO: ANDAR E CORRER */
@@ -64,37 +64,31 @@
         }
         
         .btn-game {
-            width: 85px;
-            height: 85px;
-            background: #232428; /* Cor sólida para garantir que apareça para todos */
-            border: 3px solid #5865F2; /* Borda visível */
-            border-radius: 20px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
             color: white;
-            font-size: 2.2rem;
+            font-size: 1.8rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
             cursor: pointer;
             touch-action: none;
         }
         
-        /* Botão de correr vermelho/laranja bem visível */
+        /* Botão de correr com destaque */
         .btn-game.run-btn {
-            background: #e67e22;
-            border-color: #f39c12;
-            font-size: 1.8rem;
+            background: rgba(255, 153, 0, 0.2);
+            border-color: rgba(255, 153, 0, 0.5);
+            font-size: 1.5rem;
         }
 
-        /* Botão de pulo verde neon */
-        .btn-game.jump-btn {
-            background: #2ecc71;
-            border-color: #27ae60;
-        }
-
-        /* Efeito de clique nos botões */
         .btn-game:active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .btn-game.run-btn:active { background: #ff9900; color: #000; border-color: #ff9900; }
 
         /* HUD DO CHAT */
         .chat-hud {
@@ -185,7 +179,7 @@
     <div id="menuModal">
         <div class="modal-content">
             <h2 style="color: white; margin-bottom: 5px;">Cyber Parkour Online</h2>
-            <p style="color: #6d6f78; font-size: 0.85rem; margin-bottom: 25px;">Botoes visíveis e sistema anti-clones</p>
+            <p style="color: #6d6f78; font-size: 0.85rem; margin-bottom: 25px;">Escolha seu nível e jogue com os dedos</p>
             
             <div class="select-title">Seu Apelido</div>
             <input type="text" id="usernameInput" placeholder="Digite seu Nick..." maxlength="12">
@@ -218,7 +212,7 @@
                 <div class="btn-game run-btn" id="btnRun">⚡</div>
             </div>
             <div class="action-pad">
-                <div class="btn-game jump-btn" id="btnJump">↑</div>
+                <div class="btn-game" id="btnJump">↑</div>
             </div>
         </div>
     </div>
@@ -299,6 +293,7 @@
             ]
         };
 
+        // Adicionada a propriedade "run" no estado dos botões
         let keys = { left: false, right: false, jump: false, run: false };
 
         function resizeCanvas() {
@@ -351,8 +346,6 @@
             playersRef.on('value', (snapshot) => {
                 players = snapshot.val() || {};
             });
-
-            // LIMPEZA AUTOMÁTICA AO SAIR DO LINK
             playersRef.child(myId).onDisconnect().remove();
 
             chatRef.limitToLast(20).on('child_added', (snapshot) => {
@@ -370,14 +363,7 @@
             });
         }
 
-        // SE FECHAR A ABA À FORÇA, REMOVE O PLAYER DO BANCO NA HORA
-        window.addEventListener('beforeunload', () => {
-            if(gameStarted && playersRef) {
-                playersRef.child(myId).remove();
-            }
-        });
-
-        // CONTROLES PC
+        // CONTROLES PC (Shift para Correr adicionado)
         window.addEventListener('keydown', (e) => {
             if(document.activeElement === document.getElementById('chatInput')) return;
             if(e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = true;
@@ -393,7 +379,7 @@
             if(e.key === 'Shift') keys.run = false;
         });
 
-        // TOQUES MOBILE MULTITOUCH ATUALIZADOS E CONFIRMADOS
+        // TOQUES MOBILE MULTITOUCH - CORRIGIDOS
         function setupMobileControl(id, keyProp) {
             const btn = document.getElementById(id);
             btn.addEventListener('pointerdown', (e) => { 
@@ -431,6 +417,7 @@
         });
 
         function gameLoop() {
+            // Define velocidade base baseada se o botão CORRER (⚡) está ativo
             let speed = keys.run ? 8.5 : 5.0;
             let animSpeed = keys.run ? 0.45 : 0.22;
 
@@ -447,6 +434,7 @@
 
             player.vy += 0.55; 
             if (keys.jump && player.isGrounded) {
+                // Pulo ganha um pequeno bônus de força se estiver correndo
                 player.vy = keys.run ? -15.5 : -14.2;
                 player.isGrounded = false;
             }
@@ -545,7 +533,7 @@
                 drawHumanoidCharacter(players[id]);
             });
 
-            // Renderizar seu boneco
+            // Renderizar você
             drawHumanoidCharacter({
                 x: player.x, y: player.y, 
                 color: player.color, name: myName, 
@@ -595,7 +583,7 @@
             ctx.fillRect(px + 13, py + 8, 3, 3);
             ctx.fillRect(px + 22, py + 8, 3, 3);
 
-            // Nome
+            // Nome do Jogador
             ctx.fillStyle = "white";
             ctx.font = "bold 15px sans-serif";
             ctx.textAlign = "center";
