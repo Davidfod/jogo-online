@@ -43,38 +43,42 @@
             display: block;
         }
 
-        /* CONTROLES VIRTUAIS (CELULAR) */
+        /* CONTROLES VIRTUAIS GIGANTES (CELULAR) */
         .controls-mobile {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
             display: flex;
             justify-content: space-between;
             pointer-events: none;
+            z-index: 10;
         }
 
-        .d-pad { display: flex; gap: 10px; pointer-events: auto; }
+        .d-pad { display: flex; gap: 20px; pointer-events: auto; }
+        
         .btn-game {
-            width: 65px;
-            height: 65px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
+            width: 90px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.25);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
             color: white;
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(4px);
+            cursor: pointer;
+            touch-action: none;
         }
-        .btn-game:active { background: var(--accent); color: #000; }
+        .btn-game:active { background: var(--accent); color: #000; border-color: var(--accent); }
         .action-pad { pointer-events: auto; }
 
         /* ABA LATERAL DO CHAT */
         .chat-sidebar {
-            width: 300px;
+            width: 320px;
             background: var(--bg-chat);
             border-left: 2px solid rgba(0,0,0,0.3);
             display: flex;
@@ -101,49 +105,50 @@
 
         .chat-msg {
             background: rgba(0,0,0,0.15);
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             word-break: break-all;
         }
         .chat-msg .name { font-weight: bold; }
 
         .chat-input-box {
-            padding: 10px;
+            padding: 12px;
             background: rgba(0,0,0,0.2);
         }
 
         .chat-input-box input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: none;
             background: #40444b;
             color: white;
-            border-radius: 4px;
+            border-radius: 6px;
             outline: none;
+            font-size: 1rem;
         }
 
         /* NOME DE USUÁRIO */
         #nameModal {
             position: fixed; top:0; left:0; width:100vw; height:100vh;
-            background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center;
             z-index: 999;
         }
         .modal-content {
-            background: var(--bg-chat); padding: 30px; border-radius: 8px; text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            background: var(--bg-chat); padding: 40px; border-radius: 12px; text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.7); width: 90%; max-width: 400px;
         }
         .modal-content input {
-            padding: 10px; border-radius: 4px; border: none; margin-bottom: 15px; width: 100%; text-align: center;
+            padding: 12px; border-radius: 6px; border: none; margin-bottom: 20px; width: 100%; text-align: center; font-size: 1.1rem;
         }
         .modal-content button {
-            background: var(--accent); color: black; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer;
+            background: var(--accent); color: black; border: none; padding: 12px 24px; font-weight: bold; font-size: 1rem; border-radius: 6px; cursor: pointer; width: 100%;
         }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            .chat-sidebar { width: 100%; height: 200px; }
-            .controls-mobile { bottom: 220px; }
+            .chat-sidebar { width: 100%; height: 250px; }
+            .controls-mobile { bottom: 270px; }
         }
     </style>
 </head>
@@ -151,7 +156,7 @@
 
     <div id="nameModal">
         <div class="modal-content">
-            <h3>Escolha seu Nome para Entrar</h3>
+            <h3>Cyber Parkour 3D</h3>
             <br>
             <input type="text" id="usernameInput" placeholder="Seu apelido" maxlength="12">
             <button onclick="startGame()">Entrar no Jogo</button>
@@ -167,21 +172,20 @@
                 <div class="btn-game" id="btnRight">▶</div>
             </div>
             <div class="action-pad">
-                <div class="btn-game" id="btnJump" style="width:75px; height:75px;">Pulo</div>
+                <div class="btn-game" id="btnJump">PULO</div>
             </div>
         </div>
     </div>
 
     <div class="chat-sidebar">
-        <div class="chat-header">Chat do Jogo</div>
+        <div class="chat-header">Chat Global</div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-box">
-            <input type="text" id="chatInput" placeholder="Pressione Enter para falar..." maxlength="60">
+            <input type="text" id="chatInput" placeholder="Digite aqui e dê Enter..." maxlength="60">
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO DO SEU FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDegW2sEjWvx3Ih7U6vs45Gp8PeXyfJ90w",
             authDomain: "cyber-a41d9.firebaseapp.com",
@@ -200,48 +204,41 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Configuração lógica do tamanho do mundo do jogo
-        const WORLD_WIDTH = 1200;
-        const WORLD_HEIGHT = 800;
+        // Mundo lógico maior para o parkour fazer sentido
+        const WORLD_WIDTH = 2000;
+        const WORLD_HEIGHT = 1000;
 
         let myId = 'p_' + Math.floor(Math.random() * 999999);
         let myName = "";
         let gameStarted = false;
 
-        // O Jogador Local
+        // Jogador Local - Aumentei o tamanho base do boneco
         let player = {
-            x: 100, y: 600,
-            width: 30, height: 45,
+            x: 200, y: 800,
+            width: 40, height: 60,
             vx: 0, vy: 0,
-            color: `hsl(${Math.random() * 360}, 80%, 60%)`,
+            color: `hsl(${Math.random() * 360}, 85%, 60%)`,
             isGrounded: false,
             lastMsg: "",
             msgTimer: 0
         };
 
-        // Outros jogadores da sala
         let players = {};
 
-        // Definição do Mapa de Parkour (Plataformas)
+        // Plataformas escaladas e maiores
         const platforms = [
-            // Chão Principal
-            { x: 0, y: 750, width: WORLD_WIDTH, height: 50 },
-            // Plataformas do Parkour
-            { x: 150, y: 630, width: 120, height: 15 },
-            { x: 340, y: 530, width: 120, height: 15 },
-            { x: 550, y: 440, width: 100, height: 15 },
-            { x: 750, y: 350, width: 150, height: 15 },
-            { x: 520, y: 250, width: 120, height: 15 },
-            { x: 300, y: 180, width: 120, height: 15 },
-            { x: 100, y: 120, width: 100, height: 15 },
-            // Plataforma Secreta Alta
-            { x: 950, y: 200, width: 200, height: 15 }
+            { x: 0, y: 920, width: WORLD_WIDTH, height: 80 }, // Chão
+            { x: 250, y: 780, width: 200, height: 25 },
+            { x: 550, y: 650, width: 200, height: 25 },
+            { x: 850, y: 530, width: 180, height: 25 },
+            { x: 1150, y: 420, width: 220, height: 25 },
+            { x: 880, y: 300, width: 180, height: 25 },
+            { x: 580, y: 220, width: 200, height: 25 },
+            { x: 250, y: 150, width: 200, height: 25 }
         ];
 
-        // Estado das Teclas / Botões de Movimento
         let keys = { left: false, right: false, jump: false };
 
-        // Ajustar tamanho do canvas na tela dinamicamente
         function resizeCanvas() {
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
@@ -255,15 +252,11 @@
             document.getElementById('nameModal').style.display = 'none';
             gameStarted = true;
             
-            // Envia dados iniciais pro Firebase
             updateFirebase();
-            
-            // Ativa os escutas de rede e os loops
             initNetwork();
             requestAnimationFrame(gameLoop);
         }
 
-        // Envia posição atual do jogador pro Firebase
         function updateFirebase() {
             if(!gameStarted) return;
             playersRef.child(myId).set({
@@ -277,16 +270,11 @@
         }
 
         function initNetwork() {
-            // Monitora a entrada/movimento de todos no mapa
             playersRef.on('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                players = data;
+                players = snapshot.val() || {};
             });
-
-            // Remove jogador quando fechar o navegador
             playersRef.child(myId).onDisconnect().remove();
 
-            // Escuta novas mensagens de Chat
             chatRef.limitToLast(30).on('child_added', (snapshot) => {
                 const data = snapshot.val();
                 const chatBox = document.getElementById('chatMessages');
@@ -298,9 +286,9 @@
             });
         }
 
-        // CONTROLES VIA TECLADO (PC)
+        // CONTROLES PC (WASD + SETAS)
         window.addEventListener('keydown', (e) => {
-            if(document.activeElement === document.getElementById('chatInput')) return; // Bloqueia se estiver digitando no chat
+            if(document.activeElement === document.getElementById('chatInput')) return;
             if(e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = true;
             if(e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = true;
             if(e.key === 'w' || e.key === 'W' || e.key === ' ' || e.key === 'ArrowUp') keys.jump = true;
@@ -312,32 +300,26 @@
             if(e.key === 'w' || e.key === 'W' || e.key === ' ' || e.key === 'ArrowUp') keys.jump = false;
         });
 
-        // CONTROLES VIA TOQUE (MOBILE)
-        function bindMobileBtn(id, property) {
+        // NOVO SISTEMA DE TOQUE MOBILE INDESTRUTÍVEL (POINTER EVENTS)
+        function setupMobileControl(id, keyProp) {
             const btn = document.getElementById(id);
-            btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[property] = true; });
-            btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[property] = false; });
+            btn.addEventListener('pointerdown', (e) => { keys[keyProp] = true; });
+            btn.addEventListener('pointerup', (e) => { keys[keyProp] = false; });
+            btn.addEventListener('pointerleave', (e) => { keys[keyProp] = false; });
         }
-        bindMobileBtn('btnLeft', 'left');
-        bindMobileBtn('btnRight', 'right');
-        bindMobileBtn('btnJump', 'jump');
+        setupMobileControl('btnLeft', 'left');
+        setupMobileControl('btnRight', 'right');
+        setupMobileControl('btnJump', 'jump');
 
-        // ENVIO DE CHAT
+        // ENVIO DE MENSAGEM
         document.getElementById('chatInput').addEventListener('keydown', (e) => {
             if(e.key === 'Enter') {
                 const input = e.target;
                 const text = input.value.trim();
                 if(text !== "") {
-                    // Envia pro chat global da lateral
-                    chatRef.push({
-                        name: myName,
-                        text: text,
-                        color: player.color
-                    });
-                    
-                    // Coloca o balão em cima da cabeça
+                    chatRef.push({ name: myName, text: text, color: player.color });
                     player.lastMsg = text;
-                    player.msgTimer = 180; // dura 3 segundos rodando a 60 fps
+                    player.msgTimer = 180;
                     updateFirebase();
                 }
                 input.value = "";
@@ -345,36 +327,30 @@
             }
         });
 
-        // ENGENHARIA DE FÍSICA E LOOP PRINCIPAL DO JOGO
         function gameLoop() {
-            // 1. Movimentação Horizontal
-            if (keys.left) player.vx = -4;
-            else if (keys.right) player.vx = 4;
+            // Velocidades adaptadas para o tamanho gigante
+            if (keys.left) player.vx = -6;
+            else if (keys.right) player.vx = 6;
             else player.vx = 0;
 
-            // 2. Gravidade e Salto
-            player.vy += 0.5; // força da gravidade
+            player.vy += 0.6; // Gravidade
             if (keys.jump && player.isGrounded) {
-                player.vy = -12; // força do pulo
+                player.vy = -16; // Pulo mais forte
                 player.isGrounded = false;
             }
 
-            // Aplicar movimento projetado
             player.x += player.vx;
             player.y += player.vy;
 
-            // Limites das Paredes do Mundo
             if (player.x < 0) player.x = 0;
             if (player.x > WORLD_WIDTH - player.width) player.x = WORLD_WIDTH - player.width;
 
-            // 3. Checagem de Colisão com as Plataformas do Parkour
             player.isGrounded = false;
             for (let plat of platforms) {
-                // Checa se o boneco está caindo exatamente por cima da plataforma
                 if (player.x + player.width > plat.x && 
                     player.x < plat.x + plat.width &&
                     player.y + player.height >= plat.y && 
-                    player.y + player.height - player.vy <= plat.y + 10) {
+                    player.y + player.height - player.vy <= plat.y + 12) {
                     
                     player.y = plat.y - player.height;
                     player.vy = 0;
@@ -382,7 +358,6 @@
                 }
             }
 
-            // Diminuir o tempo do balão de fala local
             if(player.msgTimer > 0) {
                 player.msgTimer--;
                 if(player.msgTimer === 0) {
@@ -391,41 +366,40 @@
                 }
             }
 
-            // Se mudou de posição ou status, avisa o banco
             if(player.vx !== 0 || player.vy !== 0 || player.msgTimer > 0) {
                 updateFirebase();
             }
 
-            // 4. RENDERIZAÇÃO NA TELA (DESENHAR TUDO)
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Efeito de câmera simples para seguir o seu boneco centralizado
+            // SISTEMA DE CÂMERA E ZOOM INTEGRADO
             ctx.save();
-            let cameraX = -player.x + canvas.width / 2;
-            let cameraY = -player.y + canvas.height / 2;
             
-            // Previne a câmera de sair do mapa estipulado
-            cameraX = Math.min(0, Math.max(canvas.width - WORLD_WIDTH, cameraX));
-            cameraY = Math.min(0, Math.max(canvas.height - WORLD_HEIGHT, cameraY));
+            let cameraX = -player.x * 1.5 + canvas.width / 2;
+            let cameraY = -player.y * 1.5 + canvas.height / 2;
+            
+            cameraX = Math.min(0, Math.max(canvas.width - WORLD_WIDTH * 1.5, cameraX));
+            cameraY = Math.min(0, Math.max(canvas.height - WORLD_HEIGHT * 1.5, cameraY));
+            
             ctx.translate(cameraX, cameraY);
+            ctx.scale(1.5, 1.5); // Aumenta tudo na tela em 150% de Zoom de renderização
 
-            // Desenhar Plataformas Cinzas
-            ctx.fillStyle = "#4f545c";
+            // Desenhar plataformas modernas
+            ctx.fillStyle = "#5865F2";
             for(let plat of platforms) {
                 ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
-                // Borda brilhante na plataforma
-                ctx.strokeStyle = "#72767d";
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 2;
                 ctx.strokeRect(plat.x, plat.y, plat.width, plat.height);
             }
 
-            // Desenhar Outros Jogadores Conectados
+            // Desenhar outros jogadores
             Object.keys(players).forEach(id => {
-                if(id === myId) return; // desenha você por último
-                const p = players[id];
-                drawCharacter(p);
+                if(id === myId) return;
+                drawCharacter(players[id]);
             });
 
-            // Desenhar Você mesmo
+            // Desenhar o seu próprio boneco gigante
             drawCharacter({
                 x: player.x, y: player.y, 
                 color: player.color, name: myName, 
@@ -433,49 +407,53 @@
             });
 
             ctx.restore();
-
             requestAnimationFrame(gameLoop);
         }
 
-        // Função auxiliar para desenhar o boneco e o balão de texto em cima dele
         function drawCharacter(p) {
-            // Corpo do Boneco
+            // Renderiza o corpo quadrado gigante
             ctx.fillStyle = p.color;
-            ctx.fillRect(p.x, p.y, 30, 45);
+            ctx.fillRect(p.x, p.y, 40, 60);
 
-            // Olhinhos para dar carisma
-            ctx.fillStyle = "white";
-            ctx.fillRect(p.x + 6, p.y + 10, 5, 5);
-            ctx.fillRect(p.x + 18, p.y + 10, 5, 5);
+            // Detalhe da borda preta no boneco
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(p.x, p.y, 40, 60);
 
-            // Nome acima do boneco
+            // Olhos brancos maiores
             ctx.fillStyle = "white";
-            ctx.font = "bold 12px sans-serif";
+            ctx.fillRect(p.x + 8, p.y + 12, 8, 8);
+            ctx.fillRect(p.x + 24, p.y + 12, 8, 8);
+            
+            ctx.fillStyle = "black";
+            ctx.fillRect(p.x + 12, p.y + 15, 4, 4);
+            ctx.fillRect(p.x + 24, p.y + 15, 4, 4);
+
+            // Nome do player legível
+            ctx.fillStyle = "white";
+            ctx.font = "bold 14px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(p.name, p.x + 15, p.y - 8);
+            ctx.fillText(p.name, p.x + 20, p.y - 12);
 
-            // Balão de Mensagem (se houver fala ativa)
+            // Balão de fala melhorado
             if (p.lastMsg && p.msgTimer > 0) {
-                ctx.font = "11px sans-serif";
+                ctx.font = "13px sans-serif";
                 let textWidth = ctx.measureText(p.lastMsg).width;
                 
-                // Caixa do Balão
                 ctx.fillStyle = "white";
                 ctx.beginPath();
-                ctx.roundRect(p.x + 15 - (textWidth/2) - 6, p.y - 42, textWidth + 12, 22, 5);
+                ctx.roundRect(p.x + 20 - (textWidth/2) - 8, p.y - 52, textWidth + 16, 26, 6);
                 ctx.fill();
 
-                // Pequena seta apontando para o boneco
                 ctx.beginPath();
-                ctx.moveTo(p.x + 11, p.y - 20);
-                ctx.lineTo(p.x + 15, p.y - 15);
-                ctx.lineTo(p.x + 19, p.y - 20);
+                ctx.moveTo(p.x + 14, p.y - 26);
+                ctx.lineTo(p.x + 20, p.y - 20);
+                ctx.lineTo(p.x + 26, p.y - 26);
                 ctx.fill();
 
-                // Texto do balão
                 ctx.fillStyle = "black";
                 ctx.textAlign = "center";
-                ctx.fillText(p.lastMsg, p.x + 15, p.y - 27);
+                ctx.fillText(p.lastMsg, p.x + 20, p.y - 35);
             }
         }
     </script>
