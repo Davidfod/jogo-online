@@ -43,12 +43,13 @@
             display: block;
         }
 
-        /* CONTROLES VIRTUAIS GIGANTES (CELULAR) */
+        /* CONTROLES SEPARADOS NOS CANTOS (CELULAR) */
         .controls-mobile {
             position: absolute;
             bottom: 30px;
-            left: 30px;
-            right: 30px;
+            left: 0;
+            right: 0;
+            padding: 0 30px;
             display: flex;
             justify-content: space-between;
             pointer-events: none;
@@ -56,15 +57,16 @@
         }
 
         .d-pad { display: flex; gap: 20px; pointer-events: auto; }
+        .action-pad { pointer-events: auto; }
         
         .btn-game {
-            width: 90px;
-            height: 90px;
-            background: rgba(255, 255, 255, 0.25);
-            border: 3px solid rgba(255, 255, 255, 0.5);
-            border-radius: 20px;
+            width: 85px;
+            height: 85px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
             color: white;
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -74,11 +76,10 @@
             touch-action: none;
         }
         .btn-game:active { background: var(--accent); color: #000; border-color: var(--accent); }
-        .action-pad { pointer-events: auto; }
 
         /* ABA LATERAL DO CHAT */
         .chat-sidebar {
-            width: 320px;
+            width: 300px;
             background: var(--bg-chat);
             border-left: 2px solid rgba(0,0,0,0.3);
             display: flex;
@@ -147,8 +148,8 @@
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            .chat-sidebar { width: 100%; height: 250px; }
-            .controls-mobile { bottom: 270px; }
+            .chat-sidebar { width: 100%; height: 220px; }
+            .controls-mobile { bottom: 240px; }
         }
     </style>
 </head>
@@ -156,7 +157,7 @@
 
     <div id="nameModal">
         <div class="modal-content">
-            <h3>Cyber Parkour 3D</h3>
+            <h3>Cyber Parkour World</h3>
             <br>
             <input type="text" id="usernameInput" placeholder="Seu apelido" maxlength="12">
             <button onclick="startGame()">Entrar no Jogo</button>
@@ -172,13 +173,13 @@
                 <div class="btn-game" id="btnRight">▶</div>
             </div>
             <div class="action-pad">
-                <div class="btn-game" id="btnJump">PULO</div>
+                <div class="btn-game" id="btnJump">↑</div>
             </div>
         </div>
     </div>
 
     <div class="chat-sidebar">
-        <div class="chat-header">Chat Global</div>
+        <div class="chat-header">Chat do Jogo</div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-box">
             <input type="text" id="chatInput" placeholder="Digite aqui e dê Enter..." maxlength="60">
@@ -204,37 +205,39 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Mundo lógico maior para o parkour fazer sentido
-        const WORLD_WIDTH = 2000;
+        // Tamanho do mundo visível
+        const WORLD_WIDTH = 2200;
         const WORLD_HEIGHT = 1000;
 
         let myId = 'p_' + Math.floor(Math.random() * 999999);
         let myName = "";
         let gameStarted = false;
 
-        // Jogador Local - Aumentei o tamanho base do boneco
+        // Estrutura física do player
         let player = {
-            x: 200, y: 800,
-            width: 40, height: 60,
+            x: 100, y: 800,
+            width: 40, height: 75, // Altura maior para acomodar cabeça e pernas
             vx: 0, vy: 0,
             color: `hsl(${Math.random() * 360}, 85%, 60%)`,
             isGrounded: false,
             lastMsg: "",
-            msgTimer: 0
+            msgTimer: 0,
+            animFrame: 0 // Usado para mover as pernas
         };
 
         let players = {};
 
-        // Plataformas escaladas e maiores
+        // Configuração das plataformas do Parkour
         const platforms = [
-            { x: 0, y: 920, width: WORLD_WIDTH, height: 80 }, // Chão
-            { x: 250, y: 780, width: 200, height: 25 },
-            { x: 550, y: 650, width: 200, height: 25 },
-            { x: 850, y: 530, width: 180, height: 25 },
-            { x: 1150, y: 420, width: 220, height: 25 },
-            { x: 880, y: 300, width: 180, height: 25 },
-            { x: 580, y: 220, width: 200, height: 25 },
-            { x: 250, y: 150, width: 200, height: 25 }
+            { x: 0, y: 940, width: WORLD_WIDTH, height: 60 }, // Chão Principal
+            { x: 200, y: 800, width: 180, height: 20 },
+            { x: 450, y: 680, width: 180, height: 20 },
+            { x: 700, y: 550, width: 180, height: 20 },
+            { x: 980, y: 440, width: 220, height: 20 },
+            { x: 1300, y: 350, width: 180, height: 20 },
+            { x: 1050, y: 230, width: 180, height: 20 },
+            { x: 750, y: 160, width: 200, height: 20 },
+            { x: 400, y: 150, width: 250, height: 20 }
         ];
 
         let keys = { left: false, right: false, jump: false };
@@ -265,7 +268,8 @@
                 color: player.color,
                 name: myName,
                 lastMsg: player.lastMsg,
-                msgTimer: player.msgTimer
+                msgTimer: player.msgTimer,
+                animFrame: player.animFrame
             });
         }
 
@@ -286,7 +290,7 @@
             });
         }
 
-        // CONTROLES PC (WASD + SETAS)
+        // CONTROLES DE COMPUTADOR
         window.addEventListener('keydown', (e) => {
             if(document.activeElement === document.getElementById('chatInput')) return;
             if(e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = true;
@@ -300,7 +304,7 @@
             if(e.key === 'w' || e.key === 'W' || e.key === ' ' || e.key === 'ArrowUp') keys.jump = false;
         });
 
-        // NOVO SISTEMA DE TOQUE MOBILE INDESTRUTÍVEL (POINTER EVENTS)
+        // TOQUE MOBILE
         function setupMobileControl(id, keyProp) {
             const btn = document.getElementById(id);
             btn.addEventListener('pointerdown', (e) => { keys[keyProp] = true; });
@@ -311,7 +315,6 @@
         setupMobileControl('btnRight', 'right');
         setupMobileControl('btnJump', 'jump');
 
-        // ENVIO DE MENSAGEM
         document.getElementById('chatInput').addEventListener('keydown', (e) => {
             if(e.key === 'Enter') {
                 const input = e.target;
@@ -328,14 +331,22 @@
         });
 
         function gameLoop() {
-            // Velocidades adaptadas para o tamanho gigante
-            if (keys.left) player.vx = -6;
-            else if (keys.right) player.vx = 6;
-            else player.vx = 0;
+            // Física de Andar
+            if (keys.left) {
+                player.vx = -5;
+                player.animFrame += 0.2; // Roda animação de andar
+            } else if (keys.right) {
+                player.vx = 5;
+                player.animFrame += 0.2;
+            } else {
+                player.vx = 0;
+                player.animFrame = 0; // Fica parado
+            }
 
-            player.vy += 0.6; // Gravidade
+            // Física de Gravidade e Pulo
+            player.vy += 0.55;
             if (keys.jump && player.isGrounded) {
-                player.vy = -16; // Pulo mais forte
+                player.vy = -14;
                 player.isGrounded = false;
             }
 
@@ -372,88 +383,116 @@
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // SISTEMA DE CÂMERA E ZOOM INTEGRADO
+            // CÂMERA AFASTADA (DÁ PARA VER MUITO MAIS DO MAPA DE LONGE)
             ctx.save();
             
-            let cameraX = -player.x * 1.5 + canvas.width / 2;
-            let cameraY = -player.y * 1.5 + canvas.height / 2;
+            // Zoom reduzido para 0.75x para garantir visão ampla dos parkours
+            let scale = 0.75;
+            let cameraX = -player.x * scale + canvas.width / 2;
+            let cameraY = -player.y * scale + canvas.height / 2;
             
-            cameraX = Math.min(0, Math.max(canvas.width - WORLD_WIDTH * 1.5, cameraX));
-            cameraY = Math.min(0, Math.max(canvas.height - WORLD_HEIGHT * 1.5, cameraY));
+            cameraX = Math.min(0, Math.max(canvas.width - WORLD_WIDTH * scale, cameraX));
+            cameraY = Math.min(0, Math.max(canvas.height - WORLD_HEIGHT * scale, cameraY));
             
             ctx.translate(cameraX, cameraY);
-            ctx.scale(1.5, 1.5); // Aumenta tudo na tela em 150% de Zoom de renderização
+            ctx.scale(scale, scale);
 
-            // Desenhar plataformas modernas
-            ctx.fillStyle = "#5865F2";
+            // Desenhar plataformas modernas e bonitas
+            ctx.fillStyle = "#3a3d42";
             for(let plat of platforms) {
                 ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
-                ctx.strokeStyle = "#ffffff";
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = varColor = "#5865F2";
+                ctx.lineWidth = 3;
                 ctx.strokeRect(plat.x, plat.y, plat.width, plat.height);
             }
 
-            // Desenhar outros jogadores
+            // Desenhar os outros jogadores
             Object.keys(players).forEach(id => {
                 if(id === myId) return;
-                drawCharacter(players[id]);
+                drawHumanoidCharacter(players[id]);
             });
 
-            // Desenhar o seu próprio boneco gigante
-            drawCharacter({
+            // Desenhar você
+            drawHumanoidCharacter({
                 x: player.x, y: player.y, 
                 color: player.color, name: myName, 
-                lastMsg: player.lastMsg, msgTimer: player.msgTimer
+                lastMsg: player.lastMsg, msgTimer: player.msgTimer,
+                animFrame: player.animFrame
             });
 
             ctx.restore();
             requestAnimationFrame(gameLoop);
         }
 
-        function drawCharacter(p) {
-            // Renderiza o corpo quadrado gigante
-            ctx.fillStyle = p.color;
-            ctx.fillRect(p.x, p.y, 40, 60);
+        // FUNÇÃO QUE DESENHA O BONECO HUMANOIDE COMPLETO (CABEÇA, CORPO, BRAÇOS, PERNAS)
+        function drawHumanoidCharacter(p) {
+            let px = p.x;
+            let py = p.y;
+            let c = p.color;
 
-            // Detalhe da borda preta no boneco
-            ctx.strokeStyle = "#000000";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(p.x, p.y, 40, 60);
+            // Frequência de balanço de pernas usando o frame de animação
+            let wave = Math.sin(p.animFrame || 0) * 10;
 
-            // Olhos brancos maiores
+            // 1. PERNAS (Duas pernas quadradas articuladas)
+            ctx.fillStyle = "#111"; // Cor da calça/perna
+            ctx.fillRect(px + 6, py + 50, 10, 25 + wave);  // Perna Esquerda
+            ctx.fillRect(px + 24, py + 50, 10, 25 - wave); // Perna Direita
+
+            // 2. CORPO (Tronco quadrado principal)
+            ctx.fillStyle = c;
+            ctx.fillRect(px + 5, py + 20, 30, 32);
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(px + 5, py + 20, 30, 32);
+
+            // 3. BRAÇOS (Acompanham o movimento das pernas)
+            ctx.fillStyle = c;
+            ctx.fillRect(px - 4, py + 22, 8, 20 - wave * 0.5); // Braço Esquerdo
+            ctx.fillRect(px + 36, py + 22, 8, 20 + wave * 0.5); // Braço Direito
+
+            // 4. CABEÇA (Quadrada por cima do corpo)
+            ctx.fillStyle = "#ffcc99"; // Cor de pele padrão
+            ctx.fillRect(px + 8, py, 24, 20);
+            ctx.strokeRect(px + 8, py, 24, 20);
+
+            // Cabelo / Boné estilizado
+            ctx.fillStyle = "#333";
+            ctx.fillRect(px + 8, py, 24, 6);
+
+            // Olhos detalhados
             ctx.fillStyle = "white";
-            ctx.fillRect(p.x + 8, p.y + 12, 8, 8);
-            ctx.fillRect(p.x + 24, p.y + 12, 8, 8);
-            
+            ctx.fillRect(px + 12, py + 7, 5, 5);
+            ctx.fillRect(px + 23, py + 7, 5, 5);
             ctx.fillStyle = "black";
-            ctx.fillRect(p.x + 12, p.y + 15, 4, 4);
-            ctx.fillRect(p.x + 24, p.y + 15, 4, 4);
+            ctx.fillRect(px + 14, py + 8, 3, 3);
+            ctx.fillRect(px + 23, py + 8, 3, 3);
 
-            // Nome do player legível
+            // Nome do Jogador
             ctx.fillStyle = "white";
-            ctx.font = "bold 14px sans-serif";
+            ctx.font = "bold 15px sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(p.name, p.x + 20, p.y - 12);
+            ctx.fillText(p.name, px + 20, py - 15);
 
-            // Balão de fala melhorado
+            // Balão de Chat flutuante
             if (p.lastMsg && p.msgTimer > 0) {
                 ctx.font = "13px sans-serif";
                 let textWidth = ctx.measureText(p.lastMsg).width;
                 
                 ctx.fillStyle = "white";
                 ctx.beginPath();
-                ctx.roundRect(p.x + 20 - (textWidth/2) - 8, p.y - 52, textWidth + 16, 26, 6);
+                ctx.roundRect(px + 20 - (textWidth/2) - 8, py - 55, textWidth + 16, 26, 6);
                 ctx.fill();
 
+                // Seta do balão
                 ctx.beginPath();
-                ctx.moveTo(p.x + 14, p.y - 26);
-                ctx.lineTo(p.x + 20, p.y - 20);
-                ctx.lineTo(p.x + 26, p.y - 26);
+                ctx.moveTo(px + 14, py - 29);
+                ctx.lineTo(px + 20, py - 23);
+                ctx.lineTo(px + 26, py - 29);
                 ctx.fill();
 
                 ctx.fillStyle = "black";
                 ctx.textAlign = "center";
-                ctx.fillText(p.lastMsg, p.x + 20, p.y - 35);
+                ctx.fillText(p.lastMsg, px + 20, py - 38);
             }
         }
     </script>
