@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cyber Parkour Multi-Salas</title>
+    <title>Cyber Parkour Online - Mobile Fixed</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -36,30 +36,41 @@
             display: block;
         }
 
-        /* CONTROLES MOBILE NOS EXTREMOS */
+        /* PAINEL DE CONTROLES DO CELULAR MELHORADO */
         .controls-mobile {
             position: absolute;
             bottom: 30px;
             left: 0;
             right: 0;
-            padding: 0 40px;
+            padding: 0 30px;
             display: flex;
             justify-content: space-between;
+            align-items: flex-end;
             pointer-events: none;
             z-index: 20;
         }
 
-        .d-pad { display: flex; gap: 20px; pointer-events: auto; }
-        .action-pad { pointer-events: auto; }
+        /* LADO ESQUERDO: ANDAR E CORRER */
+        .d-pad { 
+            display: flex; 
+            align-items: center;
+            gap: 15px; 
+            pointer-events: auto; 
+        }
+        
+        /* LADO DIREITO: PULO */
+        .action-pad { 
+            pointer-events: auto; 
+        }
         
         .btn-game {
-            width: 85px;
-            height: 85px;
-            background: rgba(255, 255, 255, 0.2);
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.18);
             border: 3px solid rgba(255, 255, 255, 0.4);
             border-radius: 50%;
             color: white;
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -68,15 +79,24 @@
             cursor: pointer;
             touch-action: none;
         }
+        
+        /* Botão de correr com destaque */
+        .btn-game.run-btn {
+            background: rgba(255, 153, 0, 0.2);
+            border-color: rgba(255, 153, 0, 0.5);
+            font-size: 1.5rem;
+        }
+
         .btn-game:active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .btn-game.run-btn:active { background: #ff9900; color: #000; border-color: #ff9900; }
 
         /* HUD DO CHAT */
         .chat-hud {
             position: absolute;
             top: 20px;
             left: 20px;
-            width: 300px;
-            height: 240px;
+            width: 280px;
+            height: 200px;
             background: var(--bg-chat);
             backdrop-filter: blur(5px);
             border-radius: 8px;
@@ -89,7 +109,7 @@
 
         .chat-messages {
             flex: 1;
-            padding: 10px;
+            padding: 8px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -100,27 +120,27 @@
             background: rgba(0, 0, 0, 0.35);
             padding: 6px 10px;
             border-radius: 4px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #fff;
             word-break: break-all;
         }
         .chat-msg .name { font-weight: bold; margin-right: 4px; }
 
         .chat-input-box {
-            padding: 8px;
+            padding: 6px;
             background: rgba(0,0,0,0.5);
             border-radius: 0 0 8px 8px;
         }
 
         .chat-input-box input {
             width: 100%;
-            padding: 8px 12px;
+            padding: 8px;
             border: none;
             background: rgba(255,255,255,0.1);
             color: white;
             border-radius: 4px;
             outline: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         /* LOBBY / MENU INICIAL DE SELEÇÃO */
@@ -130,8 +150,8 @@
             z-index: 999;
         }
         .modal-content {
-            background: #1f2126; padding: 40px; border-radius: 12px; text-align: center;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.8); width: 90%; max-width: 420px;
+            background: #1f2126; padding: 35px; border-radius: 12px; text-align: center;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.8); width: 90%; max-width: 400px;
         }
         .modal-content input {
             padding: 12px; border-radius: 6px; border: none; margin-bottom: 20px; width: 100%; text-align: center; font-size: 1.1rem; background: #383a40; color: white; outline: none;
@@ -159,12 +179,12 @@
     <div id="menuModal">
         <div class="modal-content">
             <h2 style="color: white; margin-bottom: 5px;">Cyber Parkour Online</h2>
-            <p style="color: #6d6f78; font-size: 0.85rem; margin-bottom: 25px;">Escolha seu nível e desafie os outros</p>
+            <p style="color: #6d6f78; font-size: 0.85rem; margin-bottom: 25px;">Escolha seu nível e jogue com os dedos</p>
             
             <div class="select-title">Seu Apelido</div>
             <input type="text" id="usernameInput" placeholder="Digite seu Nick..." maxlength="12">
             
-            <div class="select-title">Escolha a dificuldade (Sala)</div>
+            <div class="select-title">Escolha a dificuldade</div>
             <div class="level-selector">
                 <button class="level-btn active" onclick="selectDifficulty('facil')">FÁCIL</button>
                 <button class="level-btn" onclick="selectDifficulty('medio')">MÉDIO</button>
@@ -189,6 +209,7 @@
             <div class="d-pad">
                 <div class="btn-game" id="btnLeft">◀</div>
                 <div class="btn-game" id="btnRight">▶</div>
+                <div class="btn-game run-btn" id="btnRun">⚡</div>
             </div>
             <div class="action-pad">
                 <div class="btn-game" id="btnJump">↑</div>
@@ -221,7 +242,6 @@
         let selectedDifficulty = "facil"; 
         let gameStarted = false;
 
-        // Referências dinâmicas do Firebase baseadas na sala escolhida
         let playersRef, chatRef;
 
         let player = {
@@ -237,32 +257,31 @@
 
         let players = {};
         let platforms = [];
-        let finishBlock = { x: 2050, y: 0, width: 60, height: 60 }; // Bloco final de vitória
+        let finishBlock = { x: 2050, y: 0, width: 60, height: 60 };
 
-        // MAPAS DE ACORDO COM A DIFICULDADE
         const maps = {
             facil: [
-                { x: 0, y: 880, width: WORLD_WIDTH, height: 70 }, // chão firme grande
+                { x: 0, y: 880, width: WORLD_WIDTH, height: 70 },
                 { x: 250, y: 740, width: 220, height: 20 },
                 { x: 550, y: 620, width: 220, height: 20 },
                 { x: 850, y: 500, width: 220, height: 20 },
                 { x: 1150, y: 400, width: 220, height: 20 },
                 { x: 1450, y: 300, width: 220, height: 20 },
-                { x: 1750, y: 220, width: 300, height: 20 } // Plataforma da vitória fácil
+                { x: 1750, y: 220, width: 300, height: 20 }
             ],
             medio: [
-                { x: 0, y: 880, width: 400, height: 70 }, // chão inicial menor
+                { x: 0, y: 880, width: 400, height: 70 },
                 { x: 500, y: 760, width: 150, height: 20 },
                 { x: 750, y: 650, width: 150, height: 20 },
                 { x: 1050, y: 540, width: 140, height: 20 },
                 { x: 1300, y: 440, width: 150, height: 20 },
                 { x: 1550, y: 330, width: 130, height: 20 },
                 { x: 1800, y: 250, width: 120, height: 20 },
-                { x: 2000, y: 190, width: 150, height: 20 } // Vitória médio
+                { x: 2000, y: 190, width: 150, height: 20 }
             ],
             hard: [
-                { x: 0, y: 880, width: 200, height: 70 }, // Plataforma minúscula inicial
-                { x: 320, y: 770, width: 70, height: 20 }, // Blocos muito pequenos e distantes
+                { x: 0, y: 880, width: 200, height: 70 },
+                { x: 320, y: 770, width: 70, height: 20 },
                 { x: 520, y: 660, width: 70, height: 20 },
                 { x: 740, y: 560, width: 60, height: 20 },
                 { x: 980, y: 470, width: 60, height: 20 },
@@ -270,11 +289,12 @@
                 { x: 1460, y: 320, width: 60, height: 20 },
                 { x: 1700, y: 250, width: 60, height: 20 },
                 { x: 1920, y: 210, width: 50, height: 20 },
-                { x: 2050, y: 160, width: 100, height: 20 } // Vitória difícil
+                { x: 2050, y: 160, width: 100, height: 20 }
             ]
         };
 
-        let keys = { left: false, right: false, jump: false };
+        // Adicionada a propriedade "run" no estado dos botões
+        let keys = { left: false, right: false, jump: false, run: false };
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -294,13 +314,11 @@
             myName = input.value.trim() || "User_" + Math.floor(Math.random()*999);
             document.getElementById('menuModal').style.display = 'none';
             
-            // Carrega as plataformas e o posicionamento do bloco final baseado no mapa escolhido
             platforms = maps[selectedDifficulty];
             let lastPlat = platforms[platforms.length - 1];
             finishBlock.x = lastPlat.x + (lastPlat.width / 2) - 30;
             finishBlock.y = lastPlat.y - 60;
 
-            // Define caminhos isolados no Firebase para cada sala
             playersRef = database.ref(`rooms/${selectedDifficulty}/players`);
             chatRef = database.ref(`rooms/${selectedDifficulty}/chat`);
 
@@ -335,7 +353,6 @@
                 const chatBox = document.getElementById('chatMessages');
                 const msgEl = document.createElement('div');
                 msgEl.classList.add('chat-msg');
-                // Se for aviso do sistema, pinta de dourado
                 if(data.name === "[SISTEMA]") {
                     msgEl.style.color = "#ffcc00";
                     msgEl.style.fontWeight = "bold";
@@ -346,29 +363,41 @@
             });
         }
 
-        // CONTROLES PC (AJUSTADO)
+        // CONTROLES PC (Shift para Correr adicionado)
         window.addEventListener('keydown', (e) => {
             if(document.activeElement === document.getElementById('chatInput')) return;
             if(e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = true;
             if(e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = true;
             if(e.key === 'w' || e.key === 'W' || e.key === ' ' || e.key === 'ArrowUp') keys.jump = true;
+            if(e.key === 'Shift') keys.run = true;
         });
 
         window.addEventListener('keyup', (e) => {
             if(e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') keys.left = false;
             if(e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') keys.right = false;
             if(e.key === 'w' || e.key === 'W' || e.key === ' ' || e.key === 'ArrowUp') keys.jump = false;
+            if(e.key === 'Shift') keys.run = false;
         });
 
-        // TOQUE MOBILE REESCRITO (AGORA FUNCIONA SEM TRAVAR)
+        // TOQUES MOBILE MULTITOUCH - CORRIGIDOS
         function setupMobileControl(id, keyProp) {
             const btn = document.getElementById(id);
-            btn.addEventListener('pointerdown', () => { keys[keyProp] = true; });
-            btn.addEventListener('pointerup', () => { keys[keyProp] = false; });
-            btn.addEventListener('pointerleave', () => { keys[keyProp] = false; });
+            btn.addEventListener('pointerdown', (e) => { 
+                e.preventDefault();
+                keys[keyProp] = true; 
+            });
+            btn.addEventListener('pointerup', (e) => { 
+                e.preventDefault();
+                keys[keyProp] = false; 
+            });
+            btn.addEventListener('pointerleave', (e) => { 
+                e.preventDefault();
+                keys[keyProp] = false; 
+            });
         }
         setupMobileControl('btnLeft', 'left');
         setupMobileControl('btnRight', 'right');
+        setupMobileControl('btnRun', 'run');
         setupMobileControl('btnJump', 'jump');
 
         // ENVIO DE CHAT
@@ -379,7 +408,7 @@
                 if(text !== "") {
                     chatRef.push({ name: myName, text: text, color: player.color });
                     player.lastMsg = text;
-                    player.msgTimer = 180; // dura 3 segundos ativo no loop
+                    player.msgTimer = 180;
                     updateFirebase();
                 }
                 input.value = "";
@@ -388,39 +417,40 @@
         });
 
         function gameLoop() {
-            // Executa movimentos lineares
+            // Define velocidade base baseada se o botão CORRER (⚡) está ativo
+            let speed = keys.run ? 8.5 : 5.0;
+            let animSpeed = keys.run ? 0.45 : 0.22;
+
             if (keys.left) {
-                player.vx = -5.5;
-                player.animFrame += 0.25;
+                player.vx = -speed;
+                player.animFrame += animSpeed;
             } else if (keys.right) {
-                player.vx = 5.5;
-                player.animFrame += 0.25;
+                player.vx = speed;
+                player.animFrame += animSpeed;
             } else {
                 player.vx = 0;
                 player.animFrame = 0;
             }
 
-            player.vy += 0.55; // Gravidade realista
+            player.vy += 0.55; 
             if (keys.jump && player.isGrounded) {
-                player.vy = -14.5;
+                // Pulo ganha um pequeno bônus de força se estiver correndo
+                player.vy = keys.run ? -15.5 : -14.2;
                 player.isGrounded = false;
             }
 
             player.x += player.vx;
             player.y += player.vy;
 
-            // Bloqueio das bordas laterais do mapa
             if (player.x < 0) player.x = 0;
             if (player.x > WORLD_WIDTH - player.width) player.x = WORLD_WIDTH - player.width;
 
-            // Se cair no limbo abaixo do mapa, resgata o player pro início
             if (player.y > WORLD_HEIGHT) {
                 player.x = 80;
                 player.y = 600;
                 player.vy = 0;
             }
 
-            // Colisão fina com plataformas
             player.isGrounded = false;
             for (let plat of platforms) {
                 if (player.x + player.width > plat.x && 
@@ -434,26 +464,23 @@
                 }
             }
 
-            // CHECAGEM DE VITÓRIA (Tocou no Bloco de Ouro)
+            // VITÓRIA
             if (player.x + player.width > finishBlock.x &&
                 player.x < finishBlock.x + finishBlock.width &&
                 player.y + player.height > finishBlock.y &&
                 player.y < finishBlock.y + finishBlock.height) {
                 
-                // Dispara o alerta de campeão no chat global da sala
                 chatRef.push({
                     name: "[SISTEMA]",
-                    text: ` 🎉 @${myName} ZEROU O PARKOUR DESTA SALA! BRABO DEMAIS!`,
+                    text: ` 🎉 @${myName} DETONOU O MUNDO NO MODO ${selectedDifficulty.toUpperCase()}!`,
                     color: "#ffcc00"
                 });
                 
-                // Reseta ele de volta pro início
                 player.x = 80;
                 player.y = 600;
                 player.vy = 0;
             }
 
-            // Temporizador do balão de fala
             if(player.msgTimer > 0) {
                 player.msgTimer--;
                 if(player.msgTimer === 0) {
@@ -462,14 +489,13 @@
                 }
             }
 
-            // Sincroniza em tempo de execução com Firebase se houver mudanças físicas
             if(player.vx !== 0 || player.vy !== 0 || player.msgTimer > 0) {
                 updateFirebase();
             }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // RENDER DA CÂMERA PANORÂMICA AUTOMÁTICA
+            // CÂMERA PANORÂMICA
             ctx.save();
             let scaleX = canvas.width / WORLD_WIDTH;
             let scaleY = canvas.height / WORLD_HEIGHT;
@@ -481,7 +507,7 @@
             ctx.translate(cameraX, cameraY);
             ctx.scale(scale, scale);
 
-            // Desenhar Plataformas da sala ativa
+            // Desenhar Plataformas
             ctx.fillStyle = "#2c2f33";
             for(let plat of platforms) {
                 ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
@@ -490,25 +516,24 @@
                 ctx.strokeRect(plat.x, plat.y, plat.width, plat.height);
             }
 
-            // DESENHAR BLOCO DE VITÓRIA (OURO BRILHANTE)
+            // BLOCO DE VITÓRIA
             ctx.fillStyle = "#ffd700";
             ctx.fillRect(finishBlock.x, finishBlock.y, finishBlock.width, finishBlock.height);
             ctx.strokeStyle = "#ffffff";
             ctx.lineWidth = 2;
             ctx.strokeRect(finishBlock.x, finishBlock.y, finishBlock.width, finishBlock.height);
-            // Letra "FIM" em cima do bloco
             ctx.fillStyle = "#000";
             ctx.font = "bold 14px sans-serif";
             ctx.textAlign = "center";
             ctx.fillText("FIM", finishBlock.x + 30, finishBlock.y + 35);
 
-            // Renderizar outros players conectados na mesma sala
+            // Renderizar outros players
             Object.keys(players).forEach(id => {
                 if(id === myId) return;
                 drawHumanoidCharacter(players[id]);
             });
 
-            // Renderizar seu boneco humanoide
+            // Renderizar você
             drawHumanoidCharacter({
                 x: player.x, y: player.y, 
                 color: player.color, name: myName, 
@@ -526,7 +551,7 @@
             let c = p.color;
             let wave = Math.sin(p.animFrame || 0) * 10;
 
-            // Pernas com balanço
+            // Pernas
             ctx.fillStyle = "#16171a";
             ctx.fillRect(px + 6, py + 50, 10, 25 + wave);  
             ctx.fillRect(px + 24, py + 50, 10, 25 - wave); 
@@ -538,7 +563,7 @@
             ctx.lineWidth = 1.5;
             ctx.strokeRect(px + 5, py + 20, 30, 32);
 
-            // Braços articulados
+            // Braços
             ctx.fillStyle = c;
             ctx.fillRect(px - 4, py + 22, 8, 20 - wave * 0.4); 
             ctx.fillRect(px + 36, py + 22, 8, 20 + wave * 0.4); 
@@ -548,7 +573,7 @@
             ctx.fillRect(px + 8, py, 24, 20);
             ctx.strokeRect(px + 8, py, 24, 20);
 
-            // Olhos e Cabelo
+            // Rosto
             ctx.fillStyle = "#222";
             ctx.fillRect(px + 8, py, 24, 5); 
             ctx.fillStyle = "white";
@@ -558,31 +583,28 @@
             ctx.fillRect(px + 13, py + 8, 3, 3);
             ctx.fillRect(px + 22, py + 8, 3, 3);
 
-            // Tag fixa do Nome
+            // Nome do Jogador
             ctx.fillStyle = "white";
             ctx.font = "bold 15px sans-serif";
             ctx.textAlign = "center";
             ctx.fillText(p.name, px + 20, py - 14);
 
-            // BALÃO DE FALA ATUALIZADO (Acompanha perfeitamente em cima da cabeça)
+            // BALÃO FIXO EM CIMA DA CABEÇA
             if (p.lastMsg && p.msgTimer > 0) {
                 ctx.font = "bold 13px sans-serif";
                 let textWidth = ctx.measureText(p.lastMsg).width;
                 
-                // Retângulo branco do balão
                 ctx.fillStyle = "white";
                 ctx.beginPath();
                 ctx.roundRect(px + 20 - (textWidth/2) - 8, py - 58, textWidth + 16, 26, 6);
                 ctx.fill();
 
-                // Triângulo indicador apontando pra baixo
                 ctx.beginPath();
                 ctx.moveTo(px + 14, py - 32);
                 ctx.lineTo(px + 20, py - 26);
                 ctx.lineTo(px + 26, py - 32);
                 ctx.fill();
 
-                // Texto da mensagem
                 ctx.fillStyle = "black";
                 ctx.textAlign = "center";
                 ctx.fillText(p.lastMsg, px + 20, py - 41);
